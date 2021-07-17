@@ -27,10 +27,10 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
     current_key, current_value = None, None
     found_positionals = 0
     seek_value = False
-    for i in range(0, len(args)):
+    for i in range(len(args)):
         current_obj = args[i]
         if seek_value:
-            if current_obj.startswith('--') or (current_obj.startswith('-') and len(current_obj) == 2):
+            if is_param_name(current_obj):
                 current_key = current_obj
                 validate_key_format(current_key)
                 current_key = extract_key(current_key)
@@ -47,7 +47,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 args_map[current_key] = current_value
                 current_key, current_value = None, None
                 seek_value = False
-        elif current_obj.startswith('--') or (current_obj.startswith('-') and len(current_obj) == 2):
+        elif is_param_name(current_obj):
             current_key = current_obj
             validate_key_format(current_key)
             current_key = extract_key(current_key)
@@ -85,6 +85,9 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
         print(f'Unwanted arguments found: {unwanted}')
         print_usage(positionals, optionals, optionals_valueless, script_name)
     return args_map
+
+def is_param_name(key):
+    return key.startswith('--') or (key.startswith('-') and len(key) == 2)
 
 def validate_key_format(key, should_exit = True):
     if key.startswith('-') and key[1:2] != '-' and len(key) > 2:
