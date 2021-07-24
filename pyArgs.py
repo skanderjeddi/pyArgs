@@ -40,7 +40,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                     current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
                 if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
                     print(f'Malformed command, found extra argument {current_obj}')
-                    print_usage(positionals, optionals, optionals_valueless, script_name, should_exit=True)
+                    print_usage(positionals, optionals, optionals_valueless, script_name, should_exit = True)
                 args_map[current_key] = 'VALUELESS'
                 current_value = None
                 seek_value = True
@@ -60,7 +60,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
             if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
                 print(f'Malformed command, found extra argument {current_obj}')
-                print_usage(positionals, optionals, optionals_valueless, script_name, should_exit=True)
+                print_usage(positionals, optionals, optionals_valueless, script_name, should_exit = True)
             seek_value = True
             is_optional_param = False
             for optional_pair in optionals_valueless:
