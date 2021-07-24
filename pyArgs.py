@@ -20,6 +20,7 @@ SOFTWARE.
 
 import sys
 
+
 def parse_args(args, positionals, optionals = [], optionals_valueless = [], script_name = 'script.py', from_sys_argv = False):
     if from_sys_argv:
         args = args[1:]
@@ -32,10 +33,14 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
         if seek_value:
             if is_param_name(current_obj):
                 current_key = current_obj
+                print(current_key)
                 validate_key_format(current_key)
                 current_key = extract_key(current_key)
-                if len(current_key) == 1:
+                if len(current_key) <= 2:
                     current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
+                if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
+                    print(f'Malformed command, found extra argument {current_obj}')
+                    print_usage(positionals, optionals, optionals_valueless, script_name, should_exit=True)
                 args_map[current_key] = 'VALUELESS'
                 current_value = None
                 seek_value = True
@@ -51,8 +56,11 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
             current_key = current_obj
             validate_key_format(current_key)
             current_key = extract_key(current_key)
-            if len(current_key) == 1:
+            if len(current_key) <= 2:
                 current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
+            if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
+                print(f'Malformed command, found extra argument {current_obj}')
+                print_usage(positionals, optionals, optionals_valueless, script_name, should_exit=True)
             seek_value = True
             is_optional_param = False
             for optional_pair in optionals_valueless:
@@ -65,15 +73,16 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
             try:
                 args_map[positionals[found_positionals]] = current_obj
             except IndexError:
-                print(f'Too many positionals found, malformed arguments, needed {found_positionals}, found {found_positionals + 1}')
-                for k in args_map:
-                    print(f'{k}:', args_map[k], ('(p)' if k in positionals else '(o)'))
+                print(
+                    f'Too many positionals found, needed {found_positionals}, found {found_positionals + 1}')
+                for key in args_map:
+                    print(f'{key}:', args_map[key], ('(p)' if key in positionals else '(o)'))
                 print(f'Extra positional: {current_obj}')
                 print_usage(positionals, optionals, optionals_valueless, script_name)
             found_positionals += 1
     if found_positionals != len(positionals):
-        found_positionals_list = [ p for p in positionals if p in args_map ]
-        print(f'Not enough positionals found, malformed arguments, needed {positionals}, found {found_positionals_list}')
+        found_positionals_list = [p for p in positionals if p in args_map]
+        print(f'Not enough positionals found, needed {positionals}, found {found_positionals_list}')
         for k in args_map:
             print(f'{k}:', args_map[k], ('(p)' if k in positionals else '(o)'))
         print_usage(positionals, optionals, optionals_valueless, script_name)
@@ -86,11 +95,13 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
         print_usage(positionals, optionals, optionals_valueless, script_name)
     return args_map
 
+
 def is_param_name(key):
-    return key.startswith('--') or (key.startswith('-') and len(key) == 2)
+    return key.startswith('--') or (key.startswith('-') and len(key) <= 3)
+
 
 def validate_key_format(key, should_exit = True):
-    if key.startswith('-') and key[1:2] != '-' and len(key) > 2:
+    if key.startswith('-') and key[1:2] != '-' and len(key) > 3:
         print(f'Malformed argument {key}, - should only be used for short form optionals')
         if should_exit:
             exit(1)
@@ -101,11 +112,17 @@ def validate_key_format(key, should_exit = True):
 
 
 def extract_key(key):
+    if key is None:
+        print('Malformed command', key)
+        exit(1)
     while key.startswith('-'):
         key = key[1:]
     return key
 
+
 def is_param_valid(param, positionals, optionals, optionals_valueless):
+    if param is None:
+        return False
     valid = False
     for optional_pair in optionals:
         if param in optional_pair:
@@ -115,6 +132,7 @@ def is_param_valid(param, positionals, optionals, optionals_valueless):
             valid = True
     return valid or (param in positionals)
 
+
 def retrieve_long_form(key, optionals, optionals_valueless):
     for optional_pair in optionals:
         if key in optional_pair:
@@ -122,6 +140,7 @@ def retrieve_long_form(key, optionals, optionals_valueless):
     for optional_pair in optionals_valueless:
         if key in optional_pair:
             return optional_pair[0]
+
 
 def print_usage(positionals, optionals, optionals_valueless, script_name = 'script.py', should_exit = True):
     args_line = ''
@@ -135,8 +154,10 @@ def print_usage(positionals, optionals, optionals_valueless, script_name = 'scri
     if should_exit:
         exit(1)
 
+
 def main():
-    print(parse_args(sys.argv, [ 'path', 'mode', 'key' ], [ ('output', 'o') ], [ ('recursive', 'r'), ('verbose', 'v') ], from_sys_argv = True))
+    print(parse_args(sys.argv, ['path', 'mode', 'key'], [('output', 'o')], [ ('recursive', 'R'), ('verbose', 'v'), ('remove', 'r0')], from_sys_argv = True, script_name = 'pyArgs.py'))
+
 
 if __name__ == "__main__":
     main()
