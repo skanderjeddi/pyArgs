@@ -40,7 +40,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                     current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
                 if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
                     print(f'Malformed command, found extra argument {current_obj}')
-                    print_usage(positionals, optionals, optionals_valueless, script_name, should_exit = True)
+                    print_usage(positionals, optionals, optionals_valueless, script_name)
                 args_map[current_key] = 'VALUELESS'
                 current_value = None
                 seek_value = True
@@ -60,7 +60,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 current_key = retrieve_long_form(current_key, optionals, optionals_valueless)
             if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
                 print(f'Malformed command, found extra argument {current_obj}')
-                print_usage(positionals, optionals, optionals_valueless, script_name, should_exit = True)
+                print_usage(positionals, optionals, optionals_valueless, script_name)
             seek_value = True
             is_optional_param = False
             for optional_pair in optionals_valueless:
@@ -73,18 +73,15 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
             try:
                 args_map[positionals[found_positionals]] = current_obj
             except IndexError:
-                print(
-                    f'Too many positionals found, needed {found_positionals}, found {found_positionals + 1}')
-                for key in args_map:
-                    print(f'{key}:', args_map[key], ('(p)' if key in positionals else '(o)'))
+                print(f'Too many positionals found, needed {found_positionals}, found {found_positionals + 1}')
+                print_current_args_map(args_map, positionals)
                 print(f'Extra positional: {current_obj}')
                 print_usage(positionals, optionals, optionals_valueless, script_name)
             found_positionals += 1
     if found_positionals != len(positionals):
         found_positionals_list = [p for p in positionals if p in args_map]
         print(f'Not enough positionals found, needed {positionals}, found {found_positionals_list}')
-        for k in args_map:
-            print(f'{k}:', args_map[k], ('(p)' if k in positionals else '(o)'))
+        print_current_args_map(args_maps, positionals)
         print_usage(positionals, optionals, optionals_valueless, script_name)
     unwanted = []
     for param in args_map:
@@ -141,6 +138,11 @@ def retrieve_long_form(key, optionals, optionals_valueless):
         if key in optional_pair:
             return optional_pair[0]
 
+
+def print_current_args_map(args_map, positionals):
+    for key in args_map:
+        print(f'{key}:', args_map[key], ('(positional)' if key in positionals else '(optional)'))
+    
 
 def print_usage(positionals, optionals, optionals_valueless, script_name = 'script.py', should_exit = True):
     args_line = ''
