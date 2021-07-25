@@ -89,7 +89,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
     if found_positionals != len(positionals):
         found_positionals_list = [p for p in positionals if p in args_map]
         print(f'Not enough positionals found, needed {positionals}, found {found_positionals_list}')
-        print_current_args_map(args_maps, positionals)
+        print_current_args_map(args_map, positionals)
         print_usage(positionals, optionals, optionals_valueless, script_name)
     unwanted = []
     for category in args_map:
