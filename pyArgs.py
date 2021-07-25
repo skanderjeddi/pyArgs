@@ -25,8 +25,8 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
     if from_sys_argv:
         args = args[1:]
     args_map = {}
-    args_map['positionals'] = []
-    args_map['optionals'] = []
+    args_map['positionals'] = {}
+    args_map['optionals'] = {}
     args_map['optionals_valueless'] = []
     current_key, current_value = None, None
     found_positionals = 0
@@ -54,7 +54,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
             else:
                 current_value = current_obj
                 current_key = extract_key(current_key)
-                args_map['optionals'].append((current_key, current_value))
+                args_map['optionals'][current_key] = current_value
                 # args_map[current_key] = current_value
                 current_key, current_value = None, None
                 seek_value = False
@@ -78,7 +78,7 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 seek_value = False
         else:
             try:
-                args_map['positionals'].append((positionals[found_positionals], current_obj))
+                args_map['positionals'][positionals[found_positionals]] = current_obj
                 # args_map[positionals[found_positionals]] = current_obj
             except IndexError:
                 print(f'Too many positionals found, needed {found_positionals}, found {found_positionals + 1}')
