@@ -25,6 +25,9 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
     if from_sys_argv:
         args = args[1:]
     args_map = {}
+    args_map['positionals'] = []
+    args_map['optionals'] = []
+    args_map['optionals_valueless'] = []
     current_key, current_value = None, None
     found_positionals = 0
     seek_value = False
@@ -41,15 +44,18 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 if not is_param_valid(current_key, positionals, optionals, optionals_valueless):
                     print(f'Malformed command, found extra argument {current_obj}')
                     print_usage(positionals, optionals, optionals_valueless, script_name)
-                args_map[current_key] = 'VALUELESS'
+                args_map['optionals_valueless'].append(current_key)
+                # args_map[current_key] = 'VALUELESS'
                 current_value = None
                 seek_value = True
                 if i == len(args) - 1:
-                    args_map[current_key] = 'VALUELESS'
+                    args_map['optionals_valueless'].append(current_key)
+                    # args_map[current_key] = 'VALUELESS'
             else:
                 current_value = current_obj
                 current_key = extract_key(current_key)
-                args_map[current_key] = current_value
+                args_map['optionals'].append((current_key, current_value))
+                # args_map[current_key] = current_value
                 current_key, current_value = None, None
                 seek_value = False
         elif is_param_name(current_obj):
@@ -67,11 +73,13 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
                 if current_key in optional_pair:
                     is_optional_param = True
             if i == len(args) - 1 or is_optional_param:
-                args_map[current_key] = 'VALUELESS'
+                args_map['optionals_valueless'].append(current_key)
+                # args_map[current_key] = 'VALUELESS'
                 seek_value = False
         else:
             try:
-                args_map[positionals[found_positionals]] = current_obj
+                args_map['positionals'].append((positionals[found_positionals], current_obj))
+                # args_map[positionals[found_positionals]] = current_obj
             except IndexError:
                 print(f'Too many positionals found, needed {found_positionals}, found {found_positionals + 1}')
                 print_current_args_map(args_map, positionals)
@@ -84,9 +92,10 @@ def parse_args(args, positionals, optionals = [], optionals_valueless = [], scri
         print_current_args_map(args_maps, positionals)
         print_usage(positionals, optionals, optionals_valueless, script_name)
     unwanted = []
-    for param in args_map:
-        if not is_param_valid(param, positionals, optionals, optionals_valueless):
-            unwanted.append(param)
+    for category in args_map:
+        for param in args_map[category]:
+            if not is_param_valid(param, positionals, optionals, optionals_valueless):
+                unwanted.append(param)
     if len(unwanted) > 0:
         print(f'Unwanted arguments found: {unwanted}')
         print_usage(positionals, optionals, optionals_valueless, script_name)
@@ -122,12 +131,12 @@ def is_param_valid(param, positionals, optionals, optionals_valueless):
         return False
     valid = False
     for optional_pair in optionals:
-        if param in optional_pair:
+        if param[0] in optional_pair or param in optional_pair:
             valid = True
     for optional_pair in optionals_valueless:
-        if param in optional_pair:
+        if param[0] in optional_pair or param in optional_pair:
             valid = True
-    return valid or (param in positionals)
+    return valid or (param[0] in positionals) or (param in positionals)
 
 
 def retrieve_long_form(key, optionals, optionals_valueless):
