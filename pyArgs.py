@@ -149,8 +149,12 @@ def retrieve_long_form(key, optionals, optionals_valueless):
 
 
 def print_current_args_map(args_map, positionals):
-    for key in args_map:
-        print(f'{key}:', args_map[key], ('(positional)' if key in positionals else '(optional)'))
+    for category in args_map:
+        for key in args_map[category]:
+            if key in positionals:
+                print(f'{key}: (positional)')
+            else:
+                print(f'{key}: (optional)')
     
 
 def print_usage(positionals, optionals, optionals_valueless, script_name = 'script.py', should_exit = True):
