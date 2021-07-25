@@ -167,7 +167,11 @@ def print_usage(positionals, optionals, optionals_valueless, script_name = 'scri
 
 
 def main():
-    print(parse_args(sys.argv, ['path', 'mode', 'key'], [('output', 'o')], [ ('recursive', 'R'), ('verbose', 'v'), ('remove', 'r0')], from_sys_argv = True, script_name = 'pyArgs.py'))
+    args_map = parse_args(sys.argv[1:], ['path', 'mode', 'key'], [('output', 'o')], [ ('recursive', 'R'), ('verbose', 'v'), ('remove', 'r0')], script_name = 'pyArgs.py')
+    positionals, optionals, optionals_valueless = args_map['positionals'], args_map['optionals'], args_map['optionals_valueless']
+    print(positionals['path'], positionals['mode'], positionals['key'])
+    print(optionals['output'])
+    print(optionals_valueless)
 
 
 if __name__ == "__main__":
